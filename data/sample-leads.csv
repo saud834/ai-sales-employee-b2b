@@ -1,0 +1,9 @@
+companyName,contactName,contactTitle,email,industry,employeeCount,website,location,notes
+Northwind Logistics,Dana Whitfield,VP of Operations,dana.whitfield@northwindlogistics.example,Logistics,180,https://northwindlogistics.example,"Austin, TX",Currently using spreadsheets to track shipments
+Fintary Health,Marcus Obi,Head of Revenue,marcus.obi@fintaryhealth.example,Healthtech,95,https://fintaryhealth.example,"Toronto, Canada","Recently raised Series B, scaling sales team"
+Ledgerly,Priya Nair,Founder & CEO,priya.nair@ledgerly.example,Fintech,32,https://ledgerly.example,"London, UK","Small team, moving upmarket to mid-size businesses"
+GreenFleet Systems,Tomas Rivera,Director of Sales,tomas.rivera@greenfleet.example,Logistics,410,https://greenfleet.example,"Chicago, IL",Enterprise fleet management software
+CoreStack Analytics,Wei Chen,VP Sales,wei.chen@corestack.example,SaaS,60,https://corestack.example,"San Francisco, CA",Growing outbound sales motion
+LocalBrew Supply,Anna Kowalski,Owner,anna@localbrewsupply.example,Retail,8,https://localbrewsupply.example,"Portland, OR","Very small local business, likely poor fit"
+PayBridge,Samuel Osei,COO,samuel.osei@paybridge.example,Fintech,140,https://paybridge.example,"Lagos, Nigeria",Payments infrastructure for SMBs
+MedFlow,Rachel Kim,Head of Growth,rachel.kim@medflow.example,Healthtech,75,https://medflow.example,"Boston, MA",Looking to automate SDR workflows

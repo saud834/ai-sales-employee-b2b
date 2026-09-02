@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.env
+*.log
+data/*.db
+data/*.db-journal
+data/outbox/*.json
+!data/outbox/.gitkeep
+.DS_Store
