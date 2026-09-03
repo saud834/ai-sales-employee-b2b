@@ -1,0 +1,10 @@
+{
+  "jobId": "prototype-001",
+  "concept": "First end-to-end pipeline test, no Ava - generic cinematic proof of concept",
+  "script": "Some ideas are worth chasing, even when you're starting from nothing.",
+  "videoPrompt": "Cinematic vertical shot, a single warm desk lamp illuminating a modern minimalist home office at night, soft rain visible through a window in the background, slow gentle push-in camera movement, shallow depth of field, moody premium film look, no people, no text",
+  "durationSeconds": 8,
+  "aspectRatio": "9:16",
+  "videoProvider": "veo",
+  "voiceProvider": "googleTts"
+}
