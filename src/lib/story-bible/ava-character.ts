@@ -33,7 +33,10 @@ export const AVA_CHARACTER = {
   },
 
   appearance: {
-    hairstyle: "Dark brown, shoulder-length, straight with slight wave, often in a low ponytail when working",
+    // Updated to blonde per explicit direction in the ava_prototype_v1
+    // brief (repo root: ava_character_reference.md has the full locked
+    // reference used for that generation). Eye color/skin tone unchanged.
+    hairstyle: "Blonde, shoulder-length, soft waves, natural-looking, often in a low ponytail when working",
     eyeColor: "Warm brown",
     skinTone: "Light-medium olive",
     bodyProportions: "Average height (5'6\"), athletic-casual build",
@@ -60,7 +63,7 @@ export const AVA_CHARACTER = {
    * the identity block below.
    */
   referencePrompt: [
-    "Character: Ava Carter, 23-year-old woman, dark brown shoulder-length wavy hair often in a low ponytail, warm brown eyes, light-medium olive skin, average athletic-casual build.",
+    "Character: Ava Carter, 23-year-old woman, blonde shoulder-length wavy hair often in a low ponytail, warm brown eyes, light-medium olive skin, average athletic-casual build.",
     "Wardrobe: oversized neutral hoodie or knit sweater, plain t-shirt, straight-leg jeans, white sneakers, thin gold stud earrings, mechanical watch.",
     "Render style: premium cinematic 3D animated character, high-end animated streaming-series aesthetic (not anime, not photorealistic human, not cartoonishly childish), cinematic lighting, realistic modern environments, expressive facial animation, subtle imperfections, cinematic camera movement.",
     "This character is explicitly fictional/AI-generated and must never be depicted or described as a real photographed human.",
