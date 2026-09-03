@@ -26,3 +26,6 @@ npm-debug.log*
 # prisma
 prisma/dev.db
 prisma/dev.db-journal
+
+# prototype renders (regenerate, don't commit)
+prototype/*/output/
