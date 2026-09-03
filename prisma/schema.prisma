@@ -1,0 +1,343 @@
+// Data model for the "$0 -> $1B" build-in-public project.
+//
+// Two halves live in one schema on purpose: the real business (Opportunity,
+// Interview, Experiment, Customer, RevenueEvent, ExpenseEvent) and the
+// content system documenting it (Character, Episode, ContentPiece,
+// AnalyticsSnapshot, AudiencePoll). StoryEvent is the append-only log that
+// bridges them: every real thing that happens gets logged once here, and
+// content is generated *from* those events, never invented independently.
+//
+// TruthLabel is the enforcement mechanism for the project's core rule:
+// never fabricate customers, revenue, or traction. It defaults to REAL
+// everywhere it appears; anything else must be an explicit, visible choice.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum TruthLabel {
+  REAL
+  HYPOTHETICAL
+  SIMULATION
+  FICTIONAL
+}
+
+enum CompanyStage {
+  PRE_IDEA
+  DISCOVERY
+  VALIDATION
+  MVP_BUILD
+  EARLY_CUSTOMERS
+  GROWTH
+  SCALE
+}
+
+enum OpportunityStatus {
+  CANDIDATE
+  RESEARCHING
+  VALIDATING
+  VALIDATED
+  REJECTED
+  CHOSEN
+}
+
+enum ExperimentOutcome {
+  PENDING
+  SUCCESS
+  FAILURE
+  INCONCLUSIVE
+}
+
+enum CustomerStatus {
+  LEAD
+  TRIAL
+  PAYING
+  CHURNED
+}
+
+enum RevenueType {
+  SUBSCRIPTION
+  ONE_TIME
+  REFUND
+}
+
+enum Platform {
+  YOUTUBE
+  YOUTUBE_SHORTS
+  TIKTOK
+  INSTAGRAM_REELS
+  X
+  LINKEDIN
+  BLOG
+}
+
+enum ContentType {
+  TALKING_HEAD
+  LAPTOP_WORK
+  RESEARCH
+  CODING
+  COFFEE_SHOP
+  WALKING
+  OFFICE_ENTRY
+  BUSINESS_MEETING
+  BAD_NEWS_REACTION
+  MILESTONE_CELEBRATION
+  ANALYTICS_REVIEW
+  PRODUCT_PRESENTATION
+  SCREEN_RECORDING_VOICEOVER
+  CINEMATIC_BROLL
+  CUSTOMER_INTERVIEW_STORY
+  PRODUCT_DEMO
+  FAILURE_EPISODE
+  REVENUE_MILESTONE
+  LONG_FORM_EPISODE
+  BLOG_POST
+}
+
+enum ContentStatus {
+  IDEA
+  SCRIPTED
+  IN_PRODUCTION
+  PUBLISHED
+}
+
+enum PollStatus {
+  OPEN
+  CLOSED
+}
+
+/// Ava's persistent character sheet. Single row in practice; edited in
+/// place (versioned via updatedAt), never duplicated, so every content
+/// generation call references the same canonical description.
+model Character {
+  id             String   @id @default(cuid())
+  name           String   @default("Ava Carter")
+  isFictional    Boolean  @default(true)
+  apparentAge    Int      @default(23)
+  nationality    String   @default("American")
+  location       String   @default("Silicon Valley, California")
+  personality    Json // trait list + short descriptors
+  appearance     Json // hair, eyes, skin, body proportions, clothing, accessories
+  voice          Json // voice characteristics, speaking style
+  backstory      String
+  memories       Json // array of { day, summary } - important prior events
+  visualStyle    String @default("premium cinematic 3D animated startup documentary")
+  referencePrompt String @db.Text // reusable base prompt for image/video generation
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+/// Singleton row tracking the real, current state of the company.
+model CompanyState {
+  id                 String       @id @default(cuid())
+  dayNumber          Int          @default(0)
+  stage              CompanyStage @default(PRE_IDEA)
+  currentOpportunity Opportunity? @relation(fields: [currentOpportunityId], references: [id])
+  currentOpportunityId String?
+  cashOnHand         Decimal?     @db.Decimal(12, 2)
+  mrr                Decimal?     @db.Decimal(12, 2)
+  arr                Decimal?     @db.Decimal(12, 2)
+  activeCustomers    Int          @default(0)
+  notes              String?      @db.Text
+  updatedAt          DateTime     @updatedAt
+}
+
+/// Append-only log of everything that actually happened. This is the
+/// single source of truth content generation draws from.
+model StoryEvent {
+  id            String      @id @default(cuid())
+  dayNumber     Int
+  occurredAt    DateTime    @default(now())
+  title         String
+  description   String      @db.Text
+  truthLabel    TruthLabel  @default(REAL)
+  opportunity   Opportunity? @relation(fields: [opportunityId], references: [id])
+  opportunityId String?
+  episode       Episode?    @relation(fields: [episodeId], references: [id])
+  episodeId     String?
+  tags          String[]    @default([])
+  createdAt     DateTime    @default(now())
+
+  @@index([dayNumber])
+  @@index([truthLabel])
+}
+
+/// A candidate problem/business in the discovery engine, scored on the
+/// framework from the project brief.
+model Opportunity {
+  id                     String            @id @default(cuid())
+  title                  String
+  description            String            @db.Text
+  source                 String // e.g. "reddit", "interview", "repo-brief", "competitor-review"
+  status                 OpportunityStatus @default(CANDIDATE)
+  painScore              Int? // 1-10
+  frequency              Int? // 1-10
+  currentSpending        Int? // 1-10
+  willingnessToPay       Int? // 1-10
+  marketSize             Int? // 1-10
+  competition            Int? // 1-10 (higher = more competitive/worse)
+  aiAdvantage            Int? // 1-10
+  distributionDifficulty Int? // 1-10 (higher = harder)
+  technicalDifficulty    Int? // 1-10 (higher = harder)
+  retentionPotential     Int? // 1-10
+  expansionPotential     Int? // 1-10
+  opportunityScore       Float? // computed roll-up, nullable until scored
+  rejectionReason        String?           @db.Text
+  interviews             Interview[]
+  experiments            Experiment[]
+  storyEvents            StoryEvent[]
+  companyStates          CompanyState[]
+  createdAt              DateTime          @default(now())
+  updatedAt              DateTime          @updatedAt
+}
+
+/// A real interview conducted against an opportunity.
+model Interview {
+  id                    String      @id @default(cuid())
+  opportunity           Opportunity @relation(fields: [opportunityId], references: [id])
+  opportunityId         String
+  subjectName            String?
+  subjectCompany         String?
+  subjectRole            String?
+  notes                  String      @db.Text
+  quotes                 String[]    @default([])
+  painPointsObserved     String[]    @default([])
+  willingnessToPaySignal String?
+  conductedAt            DateTime
+  createdAt              DateTime    @default(now())
+}
+
+/// A real experiment (landing page test, payment-link test, pilot, etc.)
+/// run against an opportunity. truthLabel defaults REAL; a dry-run or
+/// simulated test must be explicitly labeled otherwise.
+model Experiment {
+  id            String            @id @default(cuid())
+  opportunity   Opportunity       @relation(fields: [opportunityId], references: [id])
+  opportunityId String
+  hypothesis    String            @db.Text
+  method        String            @db.Text
+  result        String?           @db.Text
+  outcome       ExperimentOutcome @default(PENDING)
+  truthLabel    TruthLabel        @default(REAL)
+  startedAt     DateTime          @default(now())
+  endedAt       DateTime?
+  createdAt     DateTime          @default(now())
+}
+
+/// A real customer (lead through paying through churned).
+model Customer {
+  id           String         @id @default(cuid())
+  name         String
+  company      String?
+  contactInfo  String?
+  status       CustomerStatus @default(LEAD)
+  mrr          Decimal?       @db.Decimal(12, 2)
+  notes        String?        @db.Text
+  startedAt    DateTime       @default(now())
+  churnedAt    DateTime?
+  revenueEvents RevenueEvent[]
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+}
+
+model RevenueEvent {
+  id         String      @id @default(cuid())
+  customer   Customer?   @relation(fields: [customerId], references: [id])
+  customerId String?
+  amount     Decimal     @db.Decimal(12, 2)
+  currency   String      @default("USD")
+  type       RevenueType
+  occurredAt DateTime    @default(now())
+  notes      String?
+  createdAt  DateTime    @default(now())
+}
+
+model ExpenseEvent {
+  id         String   @id @default(cuid())
+  amount     Decimal  @db.Decimal(12, 2)
+  category   String
+  occurredAt DateTime @default(now())
+  notes      String?
+  createdAt  DateTime @default(now())
+}
+
+/// A published (or planned) episode of the documentary. Long-form anchor;
+/// individual ContentPieces (shorts, posts) can optionally roll up to one.
+model Episode {
+  id          String        @id @default(cuid())
+  dayNumber   Int
+  title       String
+  summary     String        @db.Text
+  stage       CompanyStage
+  status      ContentStatus @default(IDEA)
+  truthLabel  TruthLabel    @default(REAL)
+  storyEvents StoryEvent[]
+  contentPieces ContentPiece[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+/// A single piece of platform content (short, post, blog article).
+/// Generated from real StoryEvents; sourceEventIds records the provenance.
+model ContentPiece {
+  id              String        @id @default(cuid())
+  episode         Episode?      @relation(fields: [episodeId], references: [id])
+  episodeId       String?
+  platform        Platform
+  type            ContentType
+  title           String
+  hook            String?       @db.Text
+  script          String?       @db.Text
+  status          ContentStatus @default(IDEA)
+  truthLabel      TruthLabel    @default(REAL)
+  sourceEventIds  String[]      @default([])
+  publishedAt     DateTime?
+  analytics       AnalyticsSnapshot[]
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+
+/// A point-in-time performance snapshot for a content piece, pulled from
+/// the platform's real analytics API (Phase 4+). Never estimated.
+model AnalyticsSnapshot {
+  id               String       @id @default(cuid())
+  contentPiece     ContentPiece @relation(fields: [contentPieceId], references: [id])
+  contentPieceId   String
+  views            Int          @default(0)
+  impressions      Int          @default(0)
+  ctr              Float?
+  avgWatchTimeSec  Float?
+  retentionPct     Float?
+  completionPct    Float?
+  likes            Int          @default(0)
+  comments         Int          @default(0)
+  shares           Int          @default(0)
+  saves            Int          @default(0)
+  followersGained  Int          @default(0)
+  capturedAt       DateTime     @default(now())
+}
+
+/// An audience decision point ("which idea should Ava investigate?").
+model AudiencePoll {
+  id               String       @id @default(cuid())
+  question         String
+  status           PollStatus   @default(OPEN)
+  relatedDecision  String?
+  options          PollOption[]
+  resultOptionId   String?
+  createdAt        DateTime     @default(now())
+  closedAt         DateTime?
+}
+
+model PollOption {
+  id         String       @id @default(cuid())
+  poll       AudiencePoll @relation(fields: [pollId], references: [id])
+  pollId     String
+  label      String
+  voteCount  Int          @default(0)
+}
