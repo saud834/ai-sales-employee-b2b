@@ -1,0 +1,59 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "ai-file-gateway",
+  "main": "src/index.ts",
+  "compatibility_date": "2024-12-05",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": {
+    "enabled": true
+  },
+
+  // D1 — existing database, reused as-is (do not create a new one)
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "ai-file-gateway-db",
+      "database_id": "db40020d-64a3-41b7-838f-366958231dce"
+    }
+  ],
+
+  // Workers KV — existing namespace, reused as-is (do not create a new one)
+  "kv_namespaces": [
+    {
+      "binding": "CACHE",
+      "id": "76e8420a04414c40af0fd31172e05446"
+    }
+  ],
+
+  // Vectorize — created fresh by `wrangler vectorize create` (see README).
+  // dimensions=768 matches the @cf/baai/bge-base-en-v1.5 embedding model below.
+  "vectorize": [
+    {
+      "binding": "VECTORIZE",
+      "index_name": "ai-file-gateway-index"
+    }
+  ],
+
+  // Workers AI — used for embeddings + cheap chat/translation, free-tier neurons
+  "ai": {
+    "binding": "AI"
+  },
+
+  "vars": {
+    "EMBED_MODEL": "@cf/baai/bge-base-en-v1.5",
+    "EMBED_DIMENSIONS": "768",
+    "CHAT_MODEL": "@cf/meta/llama-3.1-8b-instruct",
+    "GITHUB_OWNER": "saud834",
+    "GITHUB_REPO": "ai-file-gateway",
+    "GITHUB_BRANCH": "main",
+    "GITHUB_STORAGE_DIR": "storage",
+    "MAX_FILE_SIZE_BYTES": "20971520",
+    "CHUNK_MAX_TOKENS": "400",
+    "CHUNK_OVERLAP_TOKENS": "60",
+    "SEARCH_TOP_K": "6"
+  }
+
+  // Secrets (set via `wrangler secret put <NAME>`, never committed):
+  //   GITHUB_TOKEN   - PAT the Worker uses at runtime to read/write the storage repo
+  //   API_AUTH_TOKEN - bearer token required on every REST + MCP request
+}
