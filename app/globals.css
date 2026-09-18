@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-primary: #2563eb;
+  --color-secondary: #0ea5e9;
+  --color-accent: #22c55e;
+  --color-surface: #ffffff;
+  --color-ink: #0f172a;
+  --font-heading: "Inter", sans-serif;
+  --font-body: "Inter", sans-serif;
+  --radius: 8px;
+  --density: 1;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body);
+}
+
+* {
+  border-color: rgb(15 23 42 / 0.1);
+}
