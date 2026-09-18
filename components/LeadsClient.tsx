@@ -18,6 +18,7 @@ export default function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) 
     whatsapp: "",
     phone: "",
     instagram: "",
+    address: "",
     evidence: "",
   });
 
@@ -34,7 +35,7 @@ export default function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) 
       const lead: Lead = await res.json();
       setLeads((prev) => [lead, ...prev]);
       setShowForm(false);
-      setForm({ name: "", category: "", city: "", whatsapp: "", phone: "", instagram: "", evidence: "" });
+      setForm({ name: "", category: "", city: "", whatsapp: "", phone: "", instagram: "", address: "", evidence: "" });
     } finally {
       setSaving(false);
     }
@@ -75,6 +76,12 @@ export default function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) 
           <Field label="WhatsApp number" placeholder="+9665xxxxxxxx" value={form.whatsapp} onChange={(v) => setForm({ ...form, whatsapp: v })} />
           <Field label="Phone" value={form.phone} onChange={(v) => setForm({ ...form, phone: v })} />
           <Field label="Instagram handle" value={form.instagram} onChange={(v) => setForm({ ...form, instagram: v })} />
+          <Field
+            label="Street address"
+            placeholder="Street, district, city"
+            value={form.address}
+            onChange={(v) => setForm({ ...form, address: v })}
+          />
           <div className="sm:col-span-2">
             <label className="mb-1 block text-sm font-medium text-slate-700">Evidence they have no website</label>
             <textarea

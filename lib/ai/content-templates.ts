@@ -9,23 +9,45 @@ export function section(type: ComponentType, props: Record<string, unknown>): Se
   return { id: sid(type), type, props };
 }
 
-export function navbarSection(meta: WebsiteMeta, links: { label: string; href: string }[]) {
+export interface NavbarStrings {
+  whatsappCta?: string;
+  contactCta?: string;
+}
+
+export function navbarSection(
+  meta: WebsiteMeta,
+  links: { label: string; href: string }[],
+  strings?: NavbarStrings
+) {
   return section("navbar", {
     logoText: meta.siteName,
     links,
     cta: meta.whatsapp
-      ? { label: "WhatsApp Us", href: `https://wa.me/${meta.whatsapp.replace(/[^0-9]/g, "")}`, style: "primary" }
-      : { label: "Contact", href: "/contact", style: "primary" },
+      ? {
+          label: strings?.whatsappCta ?? "WhatsApp Us",
+          href: `https://wa.me/${meta.whatsapp.replace(/[^0-9]/g, "")}`,
+          style: "primary",
+        }
+      : { label: strings?.contactCta ?? "Contact", href: "/contact", style: "primary" },
     sticky: true,
   });
 }
 
-export function footerSection(meta: WebsiteMeta, links: { label: string; href: string }[]) {
+export interface FooterStrings {
+  contactTitle?: string;
+  rightsReserved?: string;
+}
+
+export function footerSection(
+  meta: WebsiteMeta,
+  links: { label: string; href: string }[],
+  strings?: FooterStrings
+) {
   return section("footer", {
     columns: [
       { title: meta.siteName, links },
       {
-        title: "Contact",
+        title: strings?.contactTitle ?? "Contact",
         links: [
           meta.phone ? { label: meta.phone, href: `tel:${meta.phone}` } : null,
           meta.email ? { label: meta.email, href: `mailto:${meta.email}` } : null,
@@ -36,6 +58,6 @@ export function footerSection(meta: WebsiteMeta, links: { label: string; href: s
     socialLinks: meta.whatsapp
       ? [{ platform: "whatsapp", href: `https://wa.me/${meta.whatsapp.replace(/[^0-9]/g, "")}` }]
       : [],
-    copyrightText: `© ${new Date().getFullYear()} ${meta.siteName}. All rights reserved.`,
+    copyrightText: `© ${new Date().getFullYear()} ${meta.siteName}. ${strings?.rightsReserved ?? "All rights reserved."}`,
   });
 }

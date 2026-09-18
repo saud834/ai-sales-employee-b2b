@@ -353,6 +353,8 @@ export const pageSchema = z.object({
   name: z.string().min(1).max(80),
   seo: seoSchema,
   sections: z.array(sectionSchema).min(1).max(30),
+  language: z.enum(["ar", "en"]).optional(),
+  direction: z.enum(["ltr", "rtl"]).optional(),
 });
 
 export const websiteMetaSchema = z.object({

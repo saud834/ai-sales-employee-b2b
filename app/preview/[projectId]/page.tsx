@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
 import { getProject } from "@/lib/repo/projects";
-import SiteRenderer from "@/lib/components/SiteRenderer";
-import PreviewInteractivity from "@/components/PreviewInteractivity";
+import PreviewFrame from "@/components/PreviewFrame";
 
 export const dynamic = "force-dynamic";
 
@@ -20,8 +19,5 @@ export default async function PreviewPage({
   const page = project.spec.pages.find((p) => p.slug === (pageSlug || "home")) ?? project.spec.pages[0];
   if (!page) notFound();
 
-  if (edit === "1") {
-    return <PreviewInteractivity spec={project.spec} page={page} />;
-  }
-  return <SiteRenderer spec={project.spec} page={page} />;
+  return <PreviewFrame spec={project.spec} page={page} projectId={projectId} editable={edit === "1"} />;
 }

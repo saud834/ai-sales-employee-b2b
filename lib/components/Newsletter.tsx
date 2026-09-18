@@ -2,14 +2,16 @@
 
 import { useState } from "react";
 import { Container } from "@/lib/components/ui";
+import { t, type Lang } from "@/lib/components/i18n";
 
 export interface NewsletterProps {
   heading: string;
   subheading?: string;
   placeholder?: string;
+  lang?: Lang;
 }
 
-export default function Newsletter({ heading, subheading, placeholder = "you@email.com" }: NewsletterProps) {
+export default function Newsletter({ heading, subheading, placeholder = "you@email.com", lang }: NewsletterProps) {
   const [done, setDone] = useState(false);
   return (
     <section aria-label={heading} className="bg-primary/5 py-14">
@@ -18,7 +20,7 @@ export default function Newsletter({ heading, subheading, placeholder = "you@ema
         {subheading && <p className="mt-2 text-sm text-ink/70">{subheading}</p>}
         {done ? (
           <p role="status" className="mt-5 text-sm font-medium text-ink">
-            You're subscribed &mdash; thank you!
+            {t(lang, "subscribed")}
           </p>
         ) : (
           <form
@@ -42,7 +44,7 @@ export default function Newsletter({ heading, subheading, placeholder = "you@ema
               type="submit"
               className="rounded-site bg-primary px-5 py-3 text-sm font-semibold text-white hover:opacity-90"
             >
-              Subscribe
+              {t(lang, "subscribe")}
             </button>
           </form>
         )}

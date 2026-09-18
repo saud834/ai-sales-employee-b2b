@@ -58,7 +58,8 @@ export default function SiteRenderer({
 }: SiteRendererProps) {
   return (
     <div
-      dir={spec.meta.direction}
+      dir={page.direction ?? spec.meta.direction}
+      lang={page.language ?? spec.meta.language}
       className="min-h-screen font-body"
       style={{ ...themeToCssVars(spec.theme), fontSize: `calc(1rem * var(--density))` }}
     >
@@ -90,7 +91,7 @@ export default function SiteRenderer({
                   : ""
               }
             >
-              <Component {...section.props} />
+              <Component {...section.props} lang={page.language ?? spec.meta.language} />
             </div>
           );
         })}

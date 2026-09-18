@@ -211,7 +211,9 @@ export async function buildExportZip(spec: WebsiteSpec): Promise<Buffer> {
     archive.on("error", reject);
   });
 
-  const componentFiles = fs.readdirSync(path.join(ROOT, "lib/components")).filter((f) => f.endsWith(".tsx"));
+  const componentFiles = fs
+    .readdirSync(path.join(ROOT, "lib/components"))
+    .filter((f) => f.endsWith(".tsx") || f.endsWith(".ts"));
   for (const file of componentFiles) {
     archive.append(readSource(`lib/components/${file}`), { name: `lib/components/${file}` });
   }

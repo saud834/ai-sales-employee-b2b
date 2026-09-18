@@ -61,6 +61,10 @@ export interface PageSpec {
   name: string;
   seo: SEOSpec;
   sections: SectionSpec[];
+  /** Overrides the site-wide meta.language/direction for this page only —
+   * used for bilingual sites where each language lives on its own page. */
+  language?: "ar" | "en";
+  direction?: "ltr" | "rtl";
 }
 
 export interface NavLink {
@@ -109,6 +113,7 @@ export interface Lead {
   phone?: string;
   whatsapp?: string;
   instagram?: string;
+  address?: string;
   website?: string | null;
   hasWebsite: boolean;
   evidence: string;

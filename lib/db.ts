@@ -34,6 +34,7 @@ function migrate(db: Database.Database) {
       phone TEXT,
       whatsapp TEXT,
       instagram TEXT,
+      address TEXT,
       website TEXT,
       has_website INTEGER NOT NULL DEFAULT 0,
       evidence TEXT NOT NULL DEFAULT '',
@@ -83,6 +84,12 @@ function migrate(db: Database.Database) {
     CREATE INDEX IF NOT EXISTS idx_assets_project ON assets(project_id);
     CREATE INDEX IF NOT EXISTS idx_projects_lead ON projects(lead_id);
   `);
+
+  // Additive migration for databases created before the `address` column existed.
+  const leadColumns = db.prepare("PRAGMA table_info(leads)").all() as { name: string }[];
+  if (!leadColumns.some((c) => c.name === "address")) {
+    db.exec("ALTER TABLE leads ADD COLUMN address TEXT");
+  }
 }
 
 export function getDb(): Database.Database {

@@ -30,6 +30,7 @@ export async function POST(req: NextRequest) {
             country: lead.country,
             whatsapp: lead.whatsapp,
             phone: lead.phone,
+            address: lead.address,
           }
         : undefined,
     });

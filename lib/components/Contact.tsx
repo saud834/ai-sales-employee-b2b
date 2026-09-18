@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Container, SectionHeading } from "@/lib/components/ui";
+import { t, type Lang } from "@/lib/components/i18n";
 
 export interface ContactProps {
   heading: string;
@@ -11,6 +12,7 @@ export interface ContactProps {
   whatsapp?: string;
   address?: string;
   showForm?: boolean;
+  lang?: Lang;
 }
 
 export default function Contact({
@@ -21,6 +23,7 @@ export default function Contact({
   whatsapp,
   address,
   showForm = true,
+  lang,
 }: ContactProps) {
   const [submitted, setSubmitted] = useState(false);
 
@@ -39,7 +42,7 @@ export default function Contact({
               href={`https://wa.me/${whatsapp.replace(/[^0-9]/g, "")}`}
               className="rounded-site border border-ink/10 px-4 py-2 text-ink hover:bg-ink/5"
             >
-              &#128172; WhatsApp
+              &#128172; {t(lang, "whatsapp")}
             </a>
           )}
           {email && (
@@ -52,7 +55,7 @@ export default function Contact({
         {showForm &&
           (submitted ? (
             <p role="status" className="rounded-site bg-accent/10 p-4 text-center text-sm text-ink">
-              Thanks! Your message has been received. We will get back to you shortly.
+              {t(lang, "thanksMessage")}
             </p>
           ) : (
             <form
@@ -65,7 +68,7 @@ export default function Contact({
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <label htmlFor="contact-name" className="mb-1 block text-sm font-medium text-ink">
-                    Name
+                    {t(lang, "name")}
                   </label>
                   <input
                     id="contact-name"
@@ -76,7 +79,7 @@ export default function Contact({
                 </div>
                 <div>
                   <label htmlFor="contact-email" className="mb-1 block text-sm font-medium text-ink">
-                    Email
+                    {t(lang, "email")}
                   </label>
                   <input
                     id="contact-email"
@@ -89,7 +92,7 @@ export default function Contact({
               </div>
               <div>
                 <label htmlFor="contact-message" className="mb-1 block text-sm font-medium text-ink">
-                  Message
+                  {t(lang, "message")}
                 </label>
                 <textarea
                   id="contact-message"
@@ -103,7 +106,7 @@ export default function Contact({
                 type="submit"
                 className="w-full rounded-site bg-primary px-5 py-3 text-sm font-semibold text-white hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
               >
-                Send Message
+                {t(lang, "send")}
               </button>
             </form>
           ))}

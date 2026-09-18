@@ -2,22 +2,26 @@
 
 import { useState } from "react";
 import { Container, SectionHeading } from "@/lib/components/ui";
+import { t, type Lang } from "@/lib/components/i18n";
 
 export interface ReservationProps {
   heading: string;
   description?: string;
   whatsapp?: string;
   phone?: string;
+  lang?: Lang;
 }
 
-export default function Reservation({ heading, description, whatsapp, phone }: ReservationProps) {
+export default function Reservation({ heading, description, whatsapp, phone, lang }: ReservationProps) {
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [guests, setGuests] = useState("2");
   const [name, setName] = useState("");
 
   const message = encodeURIComponent(
-    `Hello, I'd like to reserve a table.\nName: ${name || "-"}\nDate: ${date || "-"}\nTime: ${time || "-"}\nGuests: ${guests}`
+    lang === "ar"
+      ? `مرحبًا، أرغب في حجز طاولة.\nالاسم: ${name || "-"}\nالتاريخ: ${date || "-"}\nالوقت: ${time || "-"}\nعدد الأشخاص: ${guests}`
+      : `Hello, I'd like to reserve a table.\nName: ${name || "-"}\nDate: ${date || "-"}\nTime: ${time || "-"}\nGuests: ${guests}`
   );
   const waHref = whatsapp ? `https://wa.me/${whatsapp.replace(/[^0-9]/g, "")}?text=${message}` : undefined;
 
@@ -34,7 +38,7 @@ export default function Reservation({ heading, description, whatsapp, phone }: R
         >
           <div className="sm:col-span-2">
             <label htmlFor="res-name" className="mb-1 block text-sm font-medium text-ink">
-              Name
+              {t(lang, "name")}
             </label>
             <input
               id="res-name"
@@ -46,7 +50,7 @@ export default function Reservation({ heading, description, whatsapp, phone }: R
           </div>
           <div>
             <label htmlFor="res-date" className="mb-1 block text-sm font-medium text-ink">
-              Date
+              {t(lang, "date")}
             </label>
             <input
               id="res-date"
@@ -59,7 +63,7 @@ export default function Reservation({ heading, description, whatsapp, phone }: R
           </div>
           <div>
             <label htmlFor="res-time" className="mb-1 block text-sm font-medium text-ink">
-              Time
+              {t(lang, "time")}
             </label>
             <input
               id="res-time"
@@ -72,7 +76,7 @@ export default function Reservation({ heading, description, whatsapp, phone }: R
           </div>
           <div className="sm:col-span-2">
             <label htmlFor="res-guests" className="mb-1 block text-sm font-medium text-ink">
-              Guests
+              {t(lang, "guests")}
             </label>
             <input
               id="res-guests"
@@ -89,9 +93,13 @@ export default function Reservation({ heading, description, whatsapp, phone }: R
             disabled={!waHref}
             className="sm:col-span-2 rounded-site bg-primary px-5 py-3 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50"
           >
-            {waHref ? "Send via WhatsApp" : "Add a WhatsApp number to enable booking"}
+            {waHref ? t(lang, "sendWhatsapp") : t(lang, "addWhatsapp")}
           </button>
-          {phone && <p className="sm:col-span-2 text-center text-sm text-ink/60">Or call us at {phone}</p>}
+          {phone && (
+            <p className="sm:col-span-2 text-center text-sm text-ink/60">
+              {t(lang, "callUs")} {phone}
+            </p>
+          )}
         </form>
       </Container>
     </section>

@@ -11,6 +11,7 @@ interface LeadRow {
   phone: string | null;
   whatsapp: string | null;
   instagram: string | null;
+  address: string | null;
   website: string | null;
   has_website: number;
   evidence: string;
@@ -31,6 +32,7 @@ function rowToLead(row: LeadRow): Lead {
     phone: row.phone ?? undefined,
     whatsapp: row.whatsapp ?? undefined,
     instagram: row.instagram ?? undefined,
+    address: row.address ?? undefined,
     website: row.website,
     hasWebsite: Boolean(row.has_website),
     evidence: row.evidence,
@@ -64,6 +66,7 @@ export interface CreateLeadInput {
   phone?: string;
   whatsapp?: string;
   instagram?: string;
+  address?: string;
   website?: string | null;
   hasWebsite?: boolean;
   evidence?: string;
@@ -83,6 +86,7 @@ export function createLead(input: CreateLeadInput): Lead {
     phone: input.phone,
     whatsapp: input.whatsapp,
     instagram: input.instagram,
+    address: input.address,
     website: input.website ?? null,
     hasWebsite: input.hasWebsite ?? false,
     evidence: input.evidence ?? "",
@@ -94,8 +98,8 @@ export function createLead(input: CreateLeadInput): Lead {
   };
   getDb()
     .prepare(
-      `INSERT INTO leads (id, name, category, city, country, phone, whatsapp, instagram, website, has_website, evidence, source_urls, notes, status, created_at, updated_at)
-       VALUES (@id, @name, @category, @city, @country, @phone, @whatsapp, @instagram, @website, @hasWebsite, @evidence, @sourceUrls, @notes, @status, @createdAt, @updatedAt)`
+      `INSERT INTO leads (id, name, category, city, country, phone, whatsapp, instagram, address, website, has_website, evidence, source_urls, notes, status, created_at, updated_at)
+       VALUES (@id, @name, @category, @city, @country, @phone, @whatsapp, @instagram, @address, @website, @hasWebsite, @evidence, @sourceUrls, @notes, @status, @createdAt, @updatedAt)`
     )
     .run({
       id: lead.id,
@@ -106,6 +110,7 @@ export function createLead(input: CreateLeadInput): Lead {
       phone: lead.phone ?? null,
       whatsapp: lead.whatsapp ?? null,
       instagram: lead.instagram ?? null,
+      address: lead.address ?? null,
       website: lead.website,
       hasWebsite: lead.hasWebsite ? 1 : 0,
       evidence: lead.evidence,
@@ -130,7 +135,7 @@ export function updateLead(id: string, patch: Partial<CreateLeadInput>): Lead | 
   getDb()
     .prepare(
       `UPDATE leads SET name=@name, category=@category, city=@city, country=@country, phone=@phone,
-       whatsapp=@whatsapp, instagram=@instagram, website=@website, has_website=@hasWebsite,
+       whatsapp=@whatsapp, instagram=@instagram, address=@address, website=@website, has_website=@hasWebsite,
        evidence=@evidence, source_urls=@sourceUrls, notes=@notes, status=@status, updated_at=@updatedAt
        WHERE id=@id`
     )
@@ -143,6 +148,7 @@ export function updateLead(id: string, patch: Partial<CreateLeadInput>): Lead | 
       phone: merged.phone ?? null,
       whatsapp: merged.whatsapp ?? null,
       instagram: merged.instagram ?? null,
+      address: merged.address ?? null,
       website: merged.website ?? null,
       hasWebsite: merged.hasWebsite ? 1 : 0,
       evidence: merged.evidence,

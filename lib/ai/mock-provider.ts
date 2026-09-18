@@ -145,119 +145,250 @@ interface BuildContext {
   lead?: LeadContext;
 }
 
-function restaurantPages(ctx: BuildContext): PageSpec[] {
-  const { meta, city, lead } = ctx;
-  const whatsappHref = meta.whatsapp ? `https://wa.me/${meta.whatsapp.replace(/[^0-9]/g, "")}` : "#";
+type Cuisine = "seafood" | "grill";
+type Lang = "en" | "ar";
+
+function detectCuisine(text: string): Cuisine {
+  const lower = text.toLowerCase();
+  const seafoodKeywords = ["seafood", "fish restaurant", "fish", "shrimp", "سمك", "بحري", "أسماك", "روبيان", "مأكولات بحرية"];
+  return seafoodKeywords.some((kw) => lower.includes(kw)) ? "seafood" : "grill";
+}
+
+function detectBilingual(text: string): boolean {
+  const lower = text.toLowerCase();
+  const mentionsEnglish = lower.includes("english") || lower.includes("انجليز") || lower.includes("إنجليز") || lower.includes("انكليز");
+  const mentionsArabic = lower.includes("arabic") || lower.includes("عربي");
+  const explicit = /bilingual|both languages|two languages|ar\s*\/\s*en|ar\s*&\s*en/.test(lower);
+  return explicit || (mentionsEnglish && mentionsArabic);
+}
+
+function restaurantCopy(lang: Lang, cuisine: Cuisine, ctx: BuildContext) {
+  const { meta, city } = ctx;
+  const cityName = city ?? (lang === "ar" ? "المملكة العربية السعودية" : "Saudi Arabia");
+  const isAr = lang === "ar";
+
+  const menu =
+    cuisine === "seafood"
+      ? isAr
+        ? [
+            {
+              name: "المشويات البحرية",
+              items: [
+                { name: "هامور مشوي", description: "هامور طازج مشوي على الفحم، يقدم مع الأرز والصلصة", price: "ريال 95" },
+                { name: "روبيان مشوي", description: "روبيان طازج متبل ومشوي، يقدم مع الأرز الأصفر", price: "ريال 75" },
+                { name: "سمك دنيس مشوي", description: "دنيس كامل مشوي بالأعشاب والليمون", price: "ريال 70" },
+              ],
+            },
+            {
+              name: "المقلية",
+              items: [
+                { name: "روبيان مقلي", description: "روبيان مقرمش مقلي، يقدم مع صلصة الثوم", price: "ريال 70" },
+                { name: "كنعد مقلي", description: "شرائح كنعد طازجة مقلية بالطريقة التقليدية", price: "ريال 60" },
+              ],
+            },
+            {
+              name: "أطباق جانبية",
+              items: [
+                { name: "أرز صيادية", description: "أرز أصفر منكه بمرقة السمك والبهارات", price: "ريال 15" },
+                { name: "سلطة طحينة", description: "سلطة طحينة طازجة مع الليمون", price: "ريال 12" },
+              ],
+            },
+          ]
+        : [
+            {
+              name: "Grilled Seafood",
+              items: [
+                { name: "Grilled Hamour", description: "Fresh grouper grilled over charcoal, served with rice and sauce", price: "SAR 95" },
+                { name: "Grilled Shrimp", description: "Marinated shrimp grilled and served with saffron rice", price: "SAR 75" },
+                { name: "Whole Grilled Denis", description: "Whole sea bream grilled with herbs and lemon", price: "SAR 70" },
+              ],
+            },
+            {
+              name: "Fried Favorites",
+              items: [
+                { name: "Fried Shrimp", description: "Crispy fried shrimp served with garlic sauce", price: "SAR 70" },
+                { name: "Fried Kingfish", description: "Fresh kingfish fillets, fried the traditional way", price: "SAR 60" },
+              ],
+            },
+            {
+              name: "Sides",
+              items: [
+                { name: "Sayadeya Rice", description: "Yellow rice simmered in fish stock and spices", price: "SAR 15" },
+                { name: "Tahini Salad", description: "Fresh tahini salad with lemon", price: "SAR 12" },
+              ],
+            },
+          ]
+      : isAr
+        ? [
+            {
+              name: "مشاوي",
+              items: [
+                { name: "مشاوي مشكل", description: "لحم ضأن، كباب، وشيش طاووق مع خضار مشوية", price: "ريال 85" },
+                { name: "كبسة لحم", description: "لحم ضأن مطهو ببطء فوق أرز متبل ومكسرات محمصة", price: "ريال 65" },
+              ],
+            },
+          ]
+        : [
+            {
+              name: "Grills & Mashaweer",
+              items: [
+                { name: "Mixed Grill Platter", description: "Lamb chops, kabab, and shish tawook with grilled vegetables", price: "SAR 85" },
+                { name: "Lamb Kabsa", description: "Slow-cooked lamb over spiced rice with roasted nuts", price: "SAR 65" },
+              ],
+            },
+          ];
+
+  const dishWord = cuisine === "seafood" ? (isAr ? "أطباق بحرية" : "seafood dishes") : isAr ? "أطباق مشاوي" : "grilled dishes";
+
+  return {
+    navLabels: isAr
+      ? { home: "الرئيسية", menu: "المنيو", gallery: "المعرض", reviews: "آراء الزبائن", location: "الموقع" }
+      : { home: "Home", menu: "Menu", gallery: "Gallery", reviews: "Reviews", location: "Location" },
+    navbarStrings: isAr ? { whatsappCta: "تواصل واتساب", contactCta: "تواصل معنا" } : { whatsappCta: "WhatsApp Us", contactCta: "Contact" },
+    footerStrings: isAr ? { contactTitle: "تواصل", rightsReserved: "جميع الحقوق محفوظة" } : { contactTitle: "Contact", rightsReserved: "All rights reserved." },
+    heroEyebrow: city ? `${meta.industry} · ${cityName}` : meta.industry,
+    heroSub: meta.tagline,
+    primaryCta: isAr ? "احجز طاولة" : "Reserve a Table",
+    secondaryCta: isAr ? "شاهد المنيو" : "View Menu",
+    aboutHeading: isAr ? `عن ${meta.siteName}` : `About ${meta.siteName}`,
+    aboutBody: isAr
+      ? `${meta.siteName} يقدم ${dishWord} طازجة يوميًا في ${cityName}، بجودة عالية وضيافة أصيلة تعكس التراث السعودي.`
+      : `${meta.siteName} brings fresh ${dishWord} to ${cityName} every day, prepared with care and served with genuine Saudi hospitality.`,
+    aboutStats: isAr
+      ? [
+          { value: "10+", label: "أطباق مميزة" },
+          { value: "4.5★", label: "تقييم الزبائن" },
+          { value: "يوميًا", label: "مكونات طازجة" },
+        ]
+      : [
+          { value: "10+", label: "Signature Dishes" },
+          { value: "4.5★", label: "Guest Rating" },
+          { value: "Daily", label: "Fresh Ingredients" },
+        ],
+    menuHeading: isAr ? "منيو المطعم" : "Our Menu",
+    menuSub: isAr ? "نكهة طازجة تقدم بعناية" : "Fresh flavor, plated with care",
+    menu,
+    galleryHeading: isAr ? "لمحة من الداخل" : "A Glimpse Inside",
+    galleryAlts: isAr
+      ? ["طبق بحري مميز", "صالة الجلوس", "المشويات الطازجة", "الشيف يحضّر الطلب"]
+      : ["Signature seafood platter", "Dining area", "Fresh grilled dishes", "Chef preparing an order"],
+    reviewsHeading: isAr ? "آراء زبائننا" : "What Our Guests Say",
+    reviews: isAr
+      ? [
+          { name: "فيصل أ.", role: "زبون محلي", quote: "أفضل أسماك جربتها بالرياض، طازجة ومطبوخة بإتقان.", rating: 5 },
+          { name: "نورة س.", role: "زبونة دائمة", quote: "نطلب كل أسبوع، الجودة ثابتة والخدمة ممتازة.", rating: 5 },
+          { name: "تركي م.", role: "تقييم جوجل", quote: "أجواء عائلية رائعة والموظفون متعاونون.", rating: 4 },
+        ]
+      : [
+          { name: "Faisal A.", role: "Local Guest", quote: "The freshest seafood I've had in Riyadh, cooked to perfection.", rating: 5 },
+          { name: "Noura S.", role: "Regular Customer", quote: "We order every week — consistent quality and great service.", rating: 5 },
+          { name: "Turki M.", role: "Google Reviewer", quote: "Great family atmosphere and helpful staff.", rating: 4 },
+        ],
+    visitHeading: isAr ? "زورونا" : "Visit Us",
+    hours: isAr
+      ? [{ day: "يوميًا", hours: "12:30 ظهرًا – 11:00 مساءً" }]
+      : [{ day: "Every day", hours: "12:30 PM – 11:00 PM" }],
+    reservationHeading: isAr ? "احجز طاولتك" : "Reserve Your Table",
+    reservationDesc: isAr
+      ? "أرسل لنا التاريخ والوقت وعدد الأشخاص عبر واتساب وسنؤكد الحجز فورًا."
+      : "Send us your preferred date, time, and party size on WhatsApp and we'll confirm right away.",
+    contactHeading: isAr ? "تواصل معنا" : "Get in Touch",
+    contactDesc: isAr
+      ? "لأسئلة الطلبات الكبيرة أو المناسبات الخاصة، يسعدنا تواصلكم."
+      : "Questions about catering, private events, or large groups? We're happy to help.",
+  };
+}
+
+function buildRestaurantPage(
+  lang: Lang,
+  cuisine: Cuisine,
+  ctx: BuildContext,
+  languageSwitch?: { label: string; href: string }
+): PageSpec {
+  const { meta, city } = ctx;
+  const c = restaurantCopy(lang, cuisine, ctx);
   const nav: NavLink[] = [
-    { label: "Home", href: "#home" },
-    { label: "Menu", href: "#menu" },
-    { label: "Gallery", href: "#gallery" },
-    { label: "Reviews", href: "#reviews" },
-    { label: "Location", href: "#location" },
+    { label: c.navLabels.home, href: "#home" },
+    { label: c.navLabels.menu, href: "#menu" },
+    { label: c.navLabels.gallery, href: "#gallery" },
+    { label: c.navLabels.reviews, href: "#reviews" },
+    { label: c.navLabels.location, href: "#location" },
+    ...(languageSwitch ? [languageSwitch] : []),
   ];
 
   const sections: SectionSpec[] = [
-    navbarSection(meta, nav),
+    navbarSection(meta, nav, c.navbarStrings),
     section("hero", {
-      eyebrow: city ? `${meta.industry} · ${city}` : meta.industry,
-      headline: `${meta.siteName}`,
-      subheadline: meta.tagline,
-      primaryCta: { label: "Reserve a Table", href: "#reservation", style: "primary" },
-      secondaryCta: { label: "View Menu", href: "#menu", style: "secondary" },
+      eyebrow: c.heroEyebrow,
+      headline: meta.siteName,
+      subheadline: c.heroSub,
+      primaryCta: { label: c.primaryCta, href: "#reservation", style: "primary" },
+      secondaryCta: { label: c.secondaryCta, href: "#menu", style: "secondary" },
       alignment: "center",
     }),
     section("about", {
-      heading: `About ${meta.siteName}`,
-      body: `${meta.siteName} brings authentic ${lead?.category?.toLowerCase() ?? "Saudi"} flavors to ${city ?? "the city"}, made from recipes passed down through generations. Every dish is prepared fresh, served with genuine hospitality, and rooted in local tradition.`,
-      stats: [
-        { value: "10+", label: "Signature Dishes" },
-        { value: "4.6★", label: "Guest Rating" },
-        { value: "Daily", label: "Fresh Ingredients" },
-      ],
+      heading: c.aboutHeading,
+      body: c.aboutBody,
+      stats: c.aboutStats,
     }),
     section("menu", {
-      heading: "Our Menu",
-      subheading: "A taste of tradition, plated with care",
-      categories: [
-        {
-          name: "Grills & Mashaweer • مشاوي",
-          items: [
-            { name: "Mixed Grill Platter • مشاوي مشكل", description: "Lamb chops, kabab, and shish tawook served with grilled vegetables", price: "SAR 85" },
-            { name: "Lamb Kabsa • كبسة لحم", description: "Slow-cooked lamb over spiced rice with roasted nuts", price: "SAR 65" },
-            { name: "Chicken Shish Tawook • شيش طاووق", description: "Marinated chicken skewers grilled over charcoal", price: "SAR 45" },
-          ],
-        },
-        {
-          name: "Starters • مقبلات",
-          items: [
-            { name: "Hummus", description: "Creamy chickpea dip with olive oil and pine nuts", price: "SAR 18" },
-            { name: "Tabbouleh", description: "Fresh parsley salad with tomato, mint, and lemon", price: "SAR 20" },
-          ],
-        },
-        {
-          name: "Desserts • حلويات",
-          items: [
-            { name: "Umm Ali", description: "Warm bread pudding with nuts and cream", price: "SAR 22" },
-            { name: "Saudi Dates & Qahwa", description: "Premium dates served with traditional Arabic coffee", price: "SAR 15" },
-          ],
-        },
-      ],
+      heading: c.menuHeading,
+      subheading: c.menuSub,
+      categories: c.menu,
     }),
     section("gallery", {
-      heading: "A Glimpse Inside",
-      images: [
-        { url: "", alt: "Signature mixed grill platter" },
-        { url: "", alt: "Traditional majlis seating area" },
-        { url: "", alt: "Fresh dates and Arabic coffee service" },
-        { url: "", alt: "Chef preparing kabsa" },
-      ],
+      heading: c.galleryHeading,
+      images: c.galleryAlts.map((alt) => ({ url: "", alt })),
     }),
     section("testimonials", {
-      heading: "What Our Guests Say",
-      items: [
-        { name: "Faisal A.", role: "Local Guest", quote: "The best mashaweer in the area — generous portions and true Saudi hospitality.", rating: 5 },
-        { name: "Noura S.", role: "Regular Customer", quote: "We order every Thursday night. The kabsa tastes like home.", rating: 5 },
-        { name: "Turki M.", role: "Google Reviewer", quote: "Great atmosphere for a family dinner, and the staff are wonderful.", rating: 4 },
-      ],
+      heading: c.reviewsHeading,
+      items: c.reviews,
     }),
     section("locationHours", {
-      heading: "Visit Us",
+      heading: c.visitHeading,
       address: meta.address ?? `${city ?? "Riyadh"}, Saudi Arabia`,
-      hours: [
-        { day: "Saturday – Wednesday", hours: "1:00 PM – 12:00 AM" },
-        { day: "Thursday – Friday", hours: "1:00 PM – 1:00 AM" },
-      ],
+      hours: c.hours,
     }),
     section("reservation", {
-      heading: "Reserve Your Table",
-      description: "Send us your preferred date, time, and party size on WhatsApp and we'll confirm right away.",
+      heading: c.reservationHeading,
+      description: c.reservationDesc,
       whatsapp: meta.whatsapp,
       phone: meta.phone,
     }),
     section("contact", {
-      heading: "Get in Touch",
-      description: "Questions about catering, private events, or large groups? We're happy to help.",
+      heading: c.contactHeading,
+      description: c.contactDesc,
       phone: meta.phone,
       whatsapp: meta.whatsapp,
       address: meta.address ?? undefined,
       showForm: true,
     }),
-    footerSection(meta, nav),
+    footerSection(meta, nav, c.footerStrings),
   ];
 
-  return [
-    {
-      id: nanoid(8),
-      slug: "home",
-      name: "Home",
-      seo: {
-        title: `${meta.siteName} | ${meta.industry} in ${city ?? "Saudi Arabia"}`,
-        description: meta.tagline.slice(0, 195),
-        keywords: [meta.industry, city ?? "Saudi Arabia", "restaurant", "mashawi", "kabsa"],
-      },
-      sections,
+  const slug = lang === "ar" ? "ar" : "home";
+  return {
+    id: nanoid(8),
+    slug,
+    name: lang === "ar" ? "العربية" : "Home",
+    language: lang,
+    direction: lang === "ar" ? "rtl" : "ltr",
+    seo: {
+      title: `${meta.siteName} | ${meta.industry} ${lang === "ar" ? "في" : "in"} ${city ?? "Saudi Arabia"}`,
+      description: c.heroSub.slice(0, 195),
+      keywords: [meta.industry, city ?? "Saudi Arabia", cuisine === "seafood" ? "seafood" : "restaurant"],
     },
-  ];
+    sections,
+  };
+}
+
+function restaurantPages(ctx: BuildContext, cuisine: Cuisine, bilingual: boolean): PageSpec[] {
+  if (!bilingual) {
+    return [buildRestaurantPage("en", cuisine, ctx)];
+  }
+  const enPage = buildRestaurantPage("en", cuisine, ctx, { label: "العربية", href: "/ar" });
+  const arPage = buildRestaurantPage("ar", cuisine, ctx, { label: "English", href: "/" });
+  return [enPage, arPage];
 }
 
 function genericPages(ctx: BuildContext, type: string): PageSpec[] {
@@ -506,7 +637,9 @@ export class MockProvider implements AIProvider {
     const { prompt, lead } = brief;
     const type = detectWebsiteType(prompt);
     const personality = detectPersonality(prompt);
-    const language = containsArabic(prompt) ? "ar" : "en";
+    const bilingual = type === "restaurant" && detectBilingual(prompt);
+    const cuisine = detectCuisine(prompt);
+    const language = bilingual ? "en" : containsArabic(prompt) ? "ar" : "en";
     const city = extractCity(prompt, lead);
     const siteName = extractSiteName(prompt, lead);
 
@@ -514,7 +647,7 @@ export class MockProvider implements AIProvider {
       siteName,
       tagline:
         type === "restaurant"
-          ? `Authentic ${lead?.category ?? "Saudi"} cuisine, served with hospitality${city ? ` in ${city}` : ""}.`
+          ? `Authentic ${lead?.category ?? (cuisine === "seafood" ? "seafood" : "Saudi")} cuisine, served with hospitality${city ? ` in ${city}` : ""}.`
           : `${personality[0] ?? "Modern"} ${type} built for ${lead?.category ?? "your"} audience.`,
       websiteType: type,
       industry: lead?.category ?? type,
@@ -531,8 +664,22 @@ export class MockProvider implements AIProvider {
     };
 
     const theme = buildTheme(personality, prompt);
+    if (type === "restaurant" && cuisine === "seafood" && !personality.includes("luxurious")) {
+      theme.mode = "light";
+      theme.primaryColor = "#0e7490";
+      theme.secondaryColor = "#0891b2";
+      theme.accentColor = "#d97706";
+      theme.surfaceColor = "#f8fafc";
+      theme.inkColor = "#0f172a";
+      theme.fontHeading = "Poppins";
+    }
+    if (bilingual) {
+      theme.fontHeading = "Tajawal";
+      theme.fontBody = "Tajawal";
+    }
+
     const ctx: BuildContext = { meta, city, lead };
-    const pages = type === "restaurant" ? restaurantPages(ctx) : genericPages(ctx, type);
+    const pages = type === "restaurant" ? restaurantPages(ctx, cuisine, bilingual) : genericPages(ctx, type);
     const nav = pages[0].sections.find((s) => s.type === "navbar")?.props.links as NavLink[] | undefined;
 
     const assets: AssetSpec[] = [];
